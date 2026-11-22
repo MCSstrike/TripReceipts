@@ -1,0 +1,42 @@
+
+name: Build Trip Receipts APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Extract Android project
+        run: unzip -q TripReceipts_AndroidStudio_Project.zip
+
+      - name: Compile debug APK
+        working-directory: TripReceiptsAndroid
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TripReceipts-APK
+          path: TripReceiptsAndroid/app/build/outputs/apk/debug/app-debug.apk
